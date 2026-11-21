@@ -24,10 +24,15 @@ ADDON_ID = 'script.arcticfuse.focus'
 PROPERTY = 'ArcticFuse.Logo.Matted'
 WINDOW = xbmcgui.Window(10000)
 
-FALLBACK_LABELS = (
+PLAYER_LABELS = (
     'Player.Art(clearlogo)',
     'Player.Art(tvshow.clearlogo)',
     'Player.Art(artist.clearlogo)',
+)
+LISTITEM_LABELS = (
+    'ListItem.Art(clearlogo)',
+    'ListItem.Art(tvshow.clearlogo)',
+    'ListItem.Art(artist.clearlogo)',
 )
 HEAD_BYTES = 8192
 CACHE = {}
@@ -119,7 +124,8 @@ def is_matted(path):
 
 
 def current_fallback_logo():
-    for label in FALLBACK_LABELS:
+    labels = PLAYER_LABELS if xbmc.Player().isPlayingVideo() else LISTITEM_LABELS
+    for label in labels:
         value = xbmc.getInfoLabel(label)
         if value:
             return value
@@ -131,8 +137,9 @@ def main():
     last = None
     while not monitor.abortRequested():
         try:
-            if xbmc.Player().isPlayingVideo():
-                matted = 'true' if is_matted(current_fallback_logo()) else 'false'
+            logo = current_fallback_logo()
+            if logo:
+                matted = 'true' if is_matted(logo) else 'false'
                 if matted != last:
                     WINDOW.setProperty(PROPERTY, matted)
                     last = matted
