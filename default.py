@@ -141,16 +141,27 @@ def focus_wall(control_id):
     set_focus(control_id, index)
 
 
+def open_playlist(window_id, control_id):
+    """Open the OSD playlist with focus already on the playing entry (no visible jump)."""
+    position = as_int(info('VideoPlayer.PlaylistPosition'), 1)
+    index = max(position - 1, 0)
+    xbmc.executebuiltin('ActivateWindowAndFocus(%d,%d,%d)' % (window_id, control_id, index))
+    log('opened window %d with focus at index %d' % (window_id, index))
+
+
 def main():
     arguments = [argument.lower() for argument in sys.argv[1:]]
     if not arguments:
         return
     mode = arguments[0]
-    control_id = as_int(arguments[1], -1) if len(arguments) > 1 else -1
-    if mode == 'playlist':
-        focus_playlist(control_id)
+    first = as_int(arguments[1], -1) if len(arguments) > 1 else -1
+    second = as_int(arguments[2], -1) if len(arguments) > 2 else -1
+    if mode == 'open':
+        open_playlist(first, second)
+    elif mode == 'playlist':
+        focus_playlist(first)
     elif mode == 'wall':
-        focus_wall(control_id)
+        focus_wall(first)
     else:
         log('unknown mode: %s' % mode, xbmc.LOGWARNING)
 

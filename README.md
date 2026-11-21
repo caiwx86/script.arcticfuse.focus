@@ -1,6 +1,6 @@
 # script.arcticfuse.focus
 
-Arctic Fuse 3 皮肤的可选聚焦助手：在 **OSD 播放列表** 与 **海报墙** 中，把焦点定位到**正在播放**或**上次播放**的剧集。
+Arctic Fuse 3 皮肤的可选聚焦助手：在 OSD 播放列表与海报墙中，把焦点定位到正在播放或上次播放的剧集。
 
 皮肤端不是硬依赖——未安装本插件时皮肤照常运行，只是不会自动定位。
 
@@ -13,7 +13,11 @@ Arctic Fuse 3 皮肤的可选聚焦助手：在 **OSD 播放列表** 与 **海�
 ## 皮肤端调用
 
 ```xml
-<!-- OSD 播放列表（容器 7000） -->
+<!-- 打开 OSD 播放列表时直接带焦点（无跳变） -->
+<ondown condition="System.HasAddon(script.arcticfuse.focus)">RunScript(script.arcticfuse.focus,open,1140,7000)</ondown>
+<ondown condition="!System.HasAddon(script.arcticfuse.focus)">ActivateWindow(1140)</ondown>
+
+<!-- 兜底：窗口以其它方式打开时再补一次定位 -->
 <onload condition="System.HasAddon(script.arcticfuse.focus)">RunScript(script.arcticfuse.focus,playlist,7000)</onload>
 
 <!-- 海报墙（容器 id = 视图 id，如 512） -->
@@ -22,7 +26,12 @@ Arctic Fuse 3 皮肤的可选聚焦助手：在 **OSD 播放列表** 与 **海�
 
 ## 行为
 
+### open 模式
+
+以 `ActivateWindowAndFocus(window, control, index)` 打开窗口：窗口出现时焦点已经在正在播放的条目上，没有可见跳变。
+
 ### playlist 模式
+
 | 步骤 | 说明 |
 |---|---|
 | 1 | 等目标容器出现条目（最多 3 秒，100ms 轮询），避免列表异步绑定把光标重置 |
@@ -31,6 +40,7 @@ Arctic Fuse 3 皮肤的可选聚焦助手：在 **OSD 播放列表** 与 **海�
 | 4 | `PlaylistLength <= 1`（季视图回退）时不做任何操作 |
 
 ### wall 模式
+
 | 步骤 | 说明 |
 |---|---|
 | 1 | 从墙上首个条目的 DBID 反查 `tvshowid` / `season` |
