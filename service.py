@@ -19,6 +19,7 @@ import urllib.request
 
 import xbmc
 import xbmcgui
+import xbmcvfs
 
 ADDON_ID = 'script.arcticfuse.focus'
 PROPERTY = 'ArcticFuse.Logo.Matted'
@@ -50,8 +51,10 @@ def resolve_source(path):
     value = path.split('|', 1)[0].strip()
     if value.startswith('image://'):
         value = urllib.parse.unquote(value[len('image://'):])
-        if value.endswith('/'):
-            value = value[:-1]
+    if value.endswith('/unknown.png'):
+        value = value[:-len('/unknown.png')]
+    if value.endswith('/'):
+        value = value[:-1]
     return value
 
 
@@ -64,6 +67,14 @@ def read_head(path):
         })
         with urllib.request.urlopen(request, timeout=6) as response:
             head = response.read()
+    elif '://' in path:
+        # dav:// smb:// nfs:// etc - read through Kodi's VFS
+        handle = xbmcvfs.File(path)
+        try:
+            data = handle.readBytes()
+            head = data if isinstance(data, bytes) else b''
+        finally:
+            handle.close()
     else:
         with open(path, 'rb') as handle:
             head = handle.read(HEAD_BYTES)
@@ -119,7 +130,7 @@ def is_matted(path):
     try:
         matted = not has_alpha(read_head(source))
     except Exception as error:            # noqa: BLE001 - never break playback
-        log('could not inspect %s: %s' % (source[:120], error), xbmc.LOGWARNING)
+        log('could not inspect %s: %s' % (source[:120], error), xbmc.LOGDEBUG)
         matted = False
     CACHE[source] = (matted, now)
     return matted
