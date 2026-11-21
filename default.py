@@ -113,6 +113,10 @@ def focus_wall(control_id):
     monitor = xbmc.Monitor()
     if not wait_for_items(control_id, monitor):
         return
+    # Only position the wall when it opens on its first item; if the user already
+    # navigated (Kodi remembers the container cursor), never yank the focus away.
+    if as_int(info('Container(%d).CurrentItem' % control_id), 0) > 1:
+        return
     tvshow_id, season = season_context(control_id)
     if tvshow_id is None or season is None:
         return
